@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "segundo_projeto",
+			"path": "../../../../../../PlatformIO/Projects/segundo_projeto"
+		},
+		{
+			"name": "projeto_integrador_arduino",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
