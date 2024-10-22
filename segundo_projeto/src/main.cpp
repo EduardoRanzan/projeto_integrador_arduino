@@ -4,9 +4,9 @@
 
 
 
-const char* ssid = "ssid";
+const char* ssid = "Prof.Rafael";
 
-const char* password = "password";
+const char* password = "senhasenha";
 
 
 
