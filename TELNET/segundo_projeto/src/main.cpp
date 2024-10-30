@@ -4,7 +4,7 @@
 
 
 
-const char* ssid = "Prof.Rafael";
+const char* ssid = "nome da rede";
 
 const char* password = "senhasenha";
 
