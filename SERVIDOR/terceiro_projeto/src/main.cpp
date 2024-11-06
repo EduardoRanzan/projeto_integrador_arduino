@@ -1,24 +1,16 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <ArduinoOTA.h>
 
-const char* ssid     = "nome da rede";
-const char* password = "senha";
+const char* ssid = "Eduardo";
+const char* password = "12345678";
 
 ESP8266WebServer server(80);
-
-const int output5 = 5;//D1
-
-//Você precisa colocar o ip da sua faixa
-IPAddress local_IP(192,168,110,172); //Troque o IP
-IPAddress gateway(192,168,110,1);
-IPAddress subnet(255,255,255,240);
+const int ledPin = LED_BUILTIN;
 
 void handleRoot();
 void handleOn();
 void handleOff();
-
-
-
 
 void handleRoot() {
   String html = "<!DOCTYPE html><html>";
@@ -29,14 +21,13 @@ void handleRoot() {
   html += "text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}";
   html += ".button2 {background-color: #77878A;}</style></head>";
   html += "<body><h1>ESP8266 Web Server</h1>";
-  html += "<img src=\"https://moodle.materdei.edu.br/pluginfile.php/1/theme_lambda/logo/1660566958/logo%20horizontal.png\" width=\"50%\">";
-  html += "<h2>Prof. Rafael</h2>";
-  html += "<button onclick=\"toggleLED('off')\" class=\"button\">ON</button>";
-  html += "<button onclick=\"toggleLED('on')\" class=\"button button2\">OFF</button>";
+  html += "<h2>Controle do LED Embutido</h2>";
+  html += "<button onclick=\"toggleLED('on')\" class=\"button\">ON</button>";
+  html += "<button onclick=\"toggleLED('off')\" class=\"button button2\">OFF</button>";
   html += "<script>";
   html += "function toggleLED(state) {";
   html += "  var xhr = new XMLHttpRequest();";
-  html += "  xhr.open('GET', '/5/' + state, true);";
+  html += "  xhr.open('GET', '/led/' + state, true);";
   html += "  xhr.send();";
   html += "}";
   html += "</script>";
@@ -45,39 +36,62 @@ void handleRoot() {
 }
 
 void handleOn() {
-  digitalWrite(output5, HIGH);
+  digitalWrite(ledPin, LOW);
   server.send(200, "text/plain", "LED Ligado!");
 }
 
 void handleOff() {
-  digitalWrite(output5, LOW);
+  digitalWrite(ledPin, HIGH); 
   server.send(200, "text/plain", "LED Desligado!");
 }
 
 void setup() {
   Serial.begin(9600);
-  pinMode(output5, OUTPUT);
-  digitalWrite(output5, LOW);
- 
-  if (!WiFi.config(local_IP, gateway, subnet)) {
-    Serial.println("STA Failed to configure");
-  }
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, HIGH);  
+  
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
+  Serial.println("WiFi conectado.");
+  Serial.print("Endereço IP: ");
   Serial.println(WiFi.localIP());
- 
-  server.on("/", HTTP_GET, handleRoot);
-  server.on("/5/on", HTTP_GET, handleOn);
-  server.on("/5/off", HTTP_GET, handleOff);
+
+  
+  server.on("/", HTTP_GET, handleRoot);  
+  server.on("/led/on", HTTP_GET, handleOn);  
+  server.on("/led/off", HTTP_GET, handleOff);  
   server.begin();
+  Serial.println("Servidor web iniciado...");
+
+  
+  ArduinoOTA.onStart([]() {
+    Serial.println("Iniciando atualização OTA...");
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println("\nAtualização concluída.");
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progresso: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("Erro[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Erro de autenticação");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Erro no início da atualização");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Erro de conexão");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Erro de recebimento");
+    else if (error == OTA_END_ERROR) Serial.println("Erro ao finalizar");
+  });
+
+  ArduinoOTA.begin();
+  Serial.println("Pronto para atualizações OTA.");
 }
 
-void loop(){
-  server.handleClient();
+void loop() {
+  server.handleClient();  
+  ArduinoOTA.handle();    
 }
