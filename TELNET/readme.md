@@ -1,4 +1,4 @@
-# Explicação do Códiog
+# Explicação do Código
 
 Este código configura um ESP8266 para controle de um LED através de uma conexão Telnet, além de permitir atualizações de firmware OTA (Over-the-Air). Utilizando a rede Wi-Fi, o ESP8266 pode ser controlado remotamente, enviando comandos para ligar ou desligar o LED.
 
